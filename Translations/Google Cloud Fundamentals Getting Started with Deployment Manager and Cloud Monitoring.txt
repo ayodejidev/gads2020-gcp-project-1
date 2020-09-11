@@ -1,0 +1,121 @@
+GETTING STARTED WITH DEPLOYMENT MANAGER AND CLOUD MONITORING
+
+
+
+
+STEP 1. To get a list of all the services;
+     gcloud services list
+
+STEP 2. Enable all the apis' needed to communicate with the services;
+   gcloud services enable monitoring.googleapis.com
+   gcloud services enable runtimeconfig.googleapis.com
+   gcloud services enable deploymentmanager.googleapis.com
+
+STEP 3. Set your environmental variables which in this case is the preferred zone we are creating a deployment;
+	export MY_ZONE=us-central1-a
+	export PROJECT_ID=qwiklabs-gcp-dcdf854d278b50cd
+
+STEP 4. Create a template; we can do this in 2 ways!
+	(a) create a yaml file from scratch uing   nano mydeploy.yaml ; then inputting the parameters where "mydeploy" is the file name OR we can download a template using this command
+	gsutil cp gs://cloud-training/gcpfcoreinfra/mydeploy.yaml mydeploy.yaml
+
+STEP 5.	After downloading the template, we can edit in our own parameters (PROJECT ID and Zone) from cloud shell using these commands
+	sed -i -e "s/PROJECT_ID/$DEVSHELL_PROJECT_ID/" mydeploy.yaml
+	sed -i -e "s/ZONE/$MY_ZONE/" mydeploy.yaml
+			OR
+	we run the "nano mydeploy.yaml" and hard-code our parameters in the editor, we'll save using ctrl O + enter, then ctrl X to exit
+
+STEP 6. Run this command to check what your configuration looks like
+	cat mydeploy.yaml
+
+(It should look like this)
+resources:
+  - name: my-vm
+    type: compute.v1.instance
+    properties:
+      zone: us-central1-a
+      machineType: zones/us-central1-a/machineTypes/n1-standard-1
+      metadata:
+        items:
+        - key: startup-script
+          value: "apt-get update"
+      disks:
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-9-stretch-v20180806
+      networkInterfaces:
+      - network: https://www.googleapis.com/compute/v1/projects/qwiklabs-gcp-dcdf854d278b50cd/global/networks/default
+        accessConfigs:
+        - name: External NAT
+          type: ONE_TO_ONE_NAT
+
+STEP 6(b). Build a deployment from the template by executing this command
+	gcloud deployment-manager deployments create my-first-depl --config mydeploy.yaml
+
+STEP 7. Confirm that your deployment manager whose script was written to spin up a virtual machine has done that by running this command.
+	gcloud compute instances list
+	(you should see a virtual machine named "my-vm" listed)
+
+STEP 8. since the aim of a deployment manager is for automation, let us update some changes and if what we have done is right, it should reflect automatically on all deployed resources. Open up the yaml file with the nano editor
+	nano mydeploy.yaml
+
+STEP 9. Locate the value parameter and change it with the below script (nginx light web app script)
+      	value: "apt-get update; apt-get install nginx-light -y"
+
+STEP 10. Update the deployment
+	gcloud deployment-manager deployments update my-first-depl --config mydeploy.yaml
+
+STEP 11. Run this command to check what your configuration looks like
+	cat mydeploy.yaml
+
+(It should look like this)
+resources:
+  - name: my-vm
+    type: compute.v1.instance
+    properties:
+      zone: us-central1-a
+      machineType: zones/us-central1-a/machineTypes/n1-standard-1
+      metadata:
+        items:
+        - key: startup-script
+          value: "apt-get update;apt-get install nginx-light -y"
+      disks:
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-9-stretch-v20180806
+      networkInterfaces:
+      - network: https://www.googleapis.com/compute/v1/projects/qwiklabs-gcp-dcdf854d278b50cd/global/networks/default
+        accessConfigs:
+        - name: External NAT
+          type: ONE_TO_ONE_NAT
+
+STEP 12. Confirm that the virtual machine's metadata has been updated by running this command
+	gcloud compute instances my-vm describe
+
+STEP 13. In the GCP Console, on the Navigation menu (Navigation menu), click Compute Engine > VM instances.To open a command prompt on the my-vm instance, click SSH in its row in the VM instances list.In the ssh session on my-vm, execute this command to create a CPU load:
+	dd if=/dev/urandom | gzip -9 >> /dev/null &
+
+STEP 14. You will now setup a Monitoring workspace that's tied to your Qwiklabs GCP Project. The following steps create a new account that has a free trial of Monitoring.In the Google Cloud Platform Console, click on Navigation menu > Monitoring. Wait for your workspace to be provisioned. When the Monitoring dashboard opens, your workspace is ready.
+
+STEP 15. Under the Settings tab menu, click Agent. Using your VM's open SSH window and the code shown on the Agents page, install both the Monitoring and Logging agents on your project's VM.
+Once both of the agents have been installed on your project's VM, click Metrics Explorer under the main Cloud Monitoring menu on the far left.
+In the Metric pane of Metrics Explorer, select the resource type GCE VM instance and the metric CPU usage.
+In the resulting graph, notice that CPU usage increased sharply a few minutes ago.
+
+STEP 16. Terminate your workload generator. Return to your ssh session on my-vm and enter this command:
+	kill %1
+
+STEP 17. Delete the provisioned resources by deleting the deployment
+	gcloud deployment-manager deployments delete my-first-depl --config mydeploy.yaml
+
+
+
+   
+   
+

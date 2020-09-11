@@ -1,0 +1,45 @@
+GOOGLE CLOUD FUNDAMENTALS: GETTING STARTED WITH APP ENGINE
+
+STEP 1. Set up the environmental variables by executing the following commands:
+	"gcloud config set project <project id>" to set project
+	"gcloud auth list" to confirm users that have access to the current project
+	"gcloud config set compute/region us-central1" to set the preferred region for deploying the app
+	"gcloud services enable appengine.googleapis.com" to enable the app-engine api
+
+
+STEP 2. Initialize the App Engine by running this command:
+	"gcloud app create --project=<project id>"
+
+STEP 3. Clone the repository (GIT in this scenario) that contains the app to be deployed. We would be cloning a sample app from google cloud platform repo using this command:
+	git clone https://github.com/GoogleCloudPlatform/python-docs-samples
+
+STEP 3(b). change into the directory containing the sample app
+	cd python-docs-samples/appengine/standard_python3/hello_world
+
+STEP 4. Before deploying the app, it is important to test it locally in cloud shell and to do that, we have to install the packages and dependencies that supports the program in which the app is written. The program in this case is python. We would run the following commands:
+	"sudo apt-get update" to download and update the packages list
+	"sudo apt-get install virtualenv -y" to set up a virtual environment to run the application
+	"virtualenv -p python3 venv" 
+	"source venv/bin/activate"  to activate the virtual environment
+	"pip install  -r requirements.txt" to install dependencies
+	"python main.py" to run the application
+
+STEP 5. In Cloud Shell, click Web preview (Web Preview) > Preview on port 8080 to preview the application.
+To end the test, return to Cloud Shell and press Ctrl+C to abort the deployed service.
+
+STEP 6. Now that we are sure the app is running locally, let us deploy to app engine. To deploy our application to the App Engine Standard environment, we have to navigate to the source directory by running this command:
+	cd ~/python-docs-samples/appengine/standard_python3/hello_world
+
+STEP 7. Deploy the application by executing this command:
+	gcloud app deploy
+This app deploy command uses the app.yaml file to identify project configuration.
+
+STEP 8. Launch your browser to view the app by running this command:
+	gcloud app browse
+
+STEP 9. App Engine offers no option to Undeploy an application. After an application is deployed, it remains deployed.
+However, you can disable the application, which causes it to no longer be accessible to users.
+In the Cloud Console, on the Navigation menu (Navigation menu), click App Engine > Settings.
+Click Disable application.
+
+	
